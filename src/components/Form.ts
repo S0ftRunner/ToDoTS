@@ -1,4 +1,4 @@
-export class From {
+export class Form {
   protected formElement: HTMLFormElement;
   protected inputField: HTMLInputElement;
 
@@ -7,7 +7,7 @@ export class From {
     this.inputField = this.formElement.querySelector('.todo-form__input');
     this.formElement.addEventListener('submit', evt => {
       evt.preventDefault();
-      this.handleFormSubmit(this.inputField);
+      this.handleFormSubmit(this.inputField.value);
     })
   }
 
