@@ -1,6 +1,16 @@
 import {IItem} from '../types/index'
 
-export class Item {
+export interface IViewItem {
+  id: string;
+  name: string;
+  render(item: IItem): HTMLElement;
+}
+
+export interface IViewItemConstructor {
+  new (template: HTMLTemplateElement): IViewItem;
+}
+
+export class Item implements IViewItem {
   protected itemElement: HTMLElement;
   protected title: HTMLElement;
   protected _id: string;
@@ -25,8 +35,6 @@ export class Item {
   set name(value: string) {
     this.title.textContent = value;
   }
-
-
 
   render(item: IItem) {
     this.name = item.name;
