@@ -1,34 +1,42 @@
-import "./styles/styles.css"
-import {todos} from './utils/constants'
-import {Item} from './components/Item'
-import {Form} from './components/Form';
-import {ToDoModel} from './components/ToDoModel';
+import "./styles/styles.css";
+import { Page } from "./components/Page";
+import { todos } from "./utils/constants";
+import { Item } from "./components/Item";
+import { Form } from "./components/Form";
+import { ToDoModel } from "./components/ToDoModel";
 
-const contentElement = document.querySelector('.todos__list');
+const contentElement = document.querySelector(".content") as HTMLElement;
 
-const template = document.querySelector('#todo-item-template') as HTMLTemplateElement; 
-const formElement = document.querySelector('.todos__form') as HTMLFormElement;
+const itemTemplate = document.querySelector(
+  ".#todo-item-template"
+) as HTMLTemplateElement;
+const formTemplate = document.querySelector(
+  ".#todo-form-template"
+) as HTMLTemplateElement;
 
-const todoForm = new Form(formElement, handleFormSubmit);
-
-function handleFormSubmit(data: string) {
-  const todoItem = new Item(template);
-  const itemElement = todoItem.render({id: "8", name: data});
-  contentElement.prepend(itemElement);
-  todoForm.clearValue();
-
-}
-
-todos.forEach(item => {
-  const todoItem = new Item(template);
-  const itemElement = todoItem.render(item);
-  contentElement.prepend(itemElement);
-})
+const page = new Page(contentElement);
 
 const todoModel = new ToDoModel();
 todoModel.items = todos;
-console.log(todoModel.items);
-console.log(todoModel.addItem('Сделать дело'));
-console.log(todoModel.items);
-todoModel.removeItem('2');
-console.log(todoModel.items);
+
+const todoForm = new Form(formTemplate);  
+todoForm.setHandler(handleFormSubmit);
+
+page.formContainer = todoForm.render();
+
+function handleFormSubmit(data: string) {
+  todoModel.addItem(data);
+  todoForm.clearValue();
+  renderTodoItems();
+}
+
+
+function renderTodoItems() {
+  page.todoContainer = todoModel.items.map((item) => {
+    const todoItem = new Item(itemTemplate);
+    const itemElement = todoItem.render(item);
+    return(itemElement);
+  }).reverse();
+}
+
+renderTodoItems();
