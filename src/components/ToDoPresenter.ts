@@ -17,7 +17,7 @@ export class ItemPresenter {
     protected viewPageContainer: IPage,
     protected viewItemConstructor: IViewItemConstructor
   ) {
-    this.itemTemplate = document.querySelector('#todo-item-tempplate') as HTMLTemplateElement;
+    this.itemTemplate = document.querySelector('#todo-item-template') as HTMLTemplateElement;
     this.formTemplate = document.querySelector('#todo-form-template') as HTMLTemplateElement;
   }
 
@@ -33,9 +33,22 @@ export class ItemPresenter {
     this.todoForm.clearValue();
   }
 
+  handleCopyItem(item: IViewItem) {
+    const copyedItem = this.model.getItem(item.id);
+    this.model.addItem(copyedItem.name);
+    this.renderView();
+  }
+
+  handleDeleteItem(item: IViewItem) {
+    this.model.removeItem(item.id);
+    this.renderView();
+  }
+
   renderView() {
     const itemList = this.model.items.map(item => {
       const todoItem = new this.viewItemConstructor(this.itemTemplate);
+      todoItem.setCopyHandler(this.handleCopyItem.bind(this));
+      todoItem.setDeleteHandler(this.handleDeleteItem.bind(this));
       const itemElement = todoItem.render(item);
       return itemElement;
     }).reverse();
