@@ -12,6 +12,7 @@ export class ItemPresenter {
   protected formTemplate: HTMLTemplateElement;
   protected todoForm: IForm;
   protected todoEditForm: IForm;
+  protected handleSubmitEditForm: (data: {value: string}) => void;
 
   constructor(
     protected model: IToDoModel,
@@ -26,7 +27,6 @@ export class ItemPresenter {
 
   init() {
     this.todoForm = new this.formConstuctor(this.formTemplate);
-    this.todoForm.setHandler(this.handleFormSubmit.bind(this));
     this.todoForm.buttonText = 'Добавить';
     this.todoForm.placeholder = 'Следующее дело';
     this.viewPageContainer.formContainer = this.todoForm.render();
@@ -34,46 +34,50 @@ export class ItemPresenter {
     this.todoEditForm = new this.formConstuctor(this.formTemplate);
     this.todoEditForm.buttonText = 'Изменить';
     this.todoEditForm.placeholder = 'Новое название'
+    this.model.on('changed', () => {
+      this.renderView();
+    })
+
+    this.todoForm.on('submit', this.handleFormSubmit.bind(this));
+    this.todoEditForm.on('submit', (data: {value: string}) => this.handleSubmitEditForm(data));
+
   }
 
-  handleFormSubmit(data: string) {
-    this.model.addItem(data);
-    this.renderView();
+  handleFormSubmit(data: {value: string}) {
+    this.model.addItem(data.value);
     this.todoForm.clearValue();
   }
 
-  handleSubmitEditForm(data: string, id: string) {
-    this.model.editItem(id, data);
-    this.renderView();
-    this.todoEditForm.clearValue();
-    this.modal.close();
-  }
 
-  handleCopyItem(item: IViewItem) {
+
+  handleCopyItem(item: {id: string}) {
     const copyedItem = this.model.getItem(item.id);
     this.model.addItem(copyedItem.name);
-    this.renderView();
   }
 
-  handleDeleteItem(item: IViewItem) {
+  handleDeleteItem(item: {id: string}) {
     this.model.removeItem(item.id);
-    this.renderView();
   }
 
-  handleEditItem(item: IViewItem) {
+  handleEditItem(item: {id: string}) {
     const editedItem = this.model.getItem(item.id);
     this.todoEditForm.setValue(editedItem.name);
     this.modal.content = this.todoEditForm.render();
-    this.todoEditForm.setHandler((data: string) => this.handleSubmitEditForm(data, item.id));
+    this.handleSubmitEditForm = (data: {value: string}) => {
+      this.model.editItem(item.id, data.value);
+      this.todoEditForm.clearValue();
+      this.modal.close();
+    }
+
     this.modal.open();
   }
 
   renderView() {
     const itemList = this.model.items.map(item => {
       const todoItem = new this.viewItemConstructor(this.itemTemplate);
-      todoItem.setCopyHandler(this.handleCopyItem.bind(this));
-      todoItem.setDeleteHandler(this.handleDeleteItem.bind(this));
-      todoItem.setEditHandler(this.handleEditItem.bind(this));
+      todoItem.on('copy', this.handleCopyItem.bind(this));
+      todoItem.on('edit', this.handleEditItem.bind(this));
+      todoItem.on('delete', this.handleDeleteItem.bind(this));
       const itemElement = todoItem.render(item);
       return itemElement;
     }).reverse();

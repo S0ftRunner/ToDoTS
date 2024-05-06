@@ -1,9 +1,11 @@
+import {IEvents} from '../components/EventEmmiter';
+
 export interface IItem {
   id: string;
   name: string;
 }
 
-export interface IToDoModel {
+export interface IToDoModel extends IEvents {
   items: IItem[];
   addItem: (data: string) => IItem;
   removeItem: (id: string) => void;
